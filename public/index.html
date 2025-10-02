@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATIVIDADE - REDE SOCIAL</title>
+
+    <link rel="stylesheet" href="./styles.css">
+
+    <!-- Importa o Jquery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <!-- Importa o Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="header_container">
+        <img src="./images/icon.png" />
+        <h1>ATIVIDADE - REDE SOCIAL</h1>
+    </div>
+
+    <div class="button_post_container">
+        <button name="btn_post" id="btn_post">POST</button>
+    </div>
+
+    <!-- Aqui vão aparecer os posts -->
+    <div class="posts_container"></div>
+
+    <!-- Estrutura do modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+
+            <div class="form_post_container">
+                <h4>FAÇA UM POST</h4>
+                <form name="frm_post" id="frm_post">
+                    <input type="text" name="txt_usuario" id="txt_usuario" placeholder="SEU NOME">
+                    <br />
+                    <input type="text" name="txt_post" id="txt_post" placeholder="TEXTO DO POST">
+                    <br />
+                    <button type="submit" name="btn_postar" id="btn_postar">POSTAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Conecta ao servidor Socket.IO
+        const socket = io("http://localhost:3000");
+
+        // Função para renderizar os posts na tela
+        function renderPost(post) {
+            $(".posts_container").append(
+                "<div class='post'>" +
+                    "<strong class='post-usuario'>" + post.usuario + "</strong>" + // nome
+                    "<p class='post-mensagem'>" + post.post + "</p>" + // mensagem
+                    "<span class='post-data'>" + post.data_hora + "</span>" + // data/hora
+                "</div>"
+            );
+        }
+
+        // Recebe posts anteriores do servidor
+        socket.on("previousMessages", function (posts) {
+            for (let post of posts) {
+                renderPost(post);
+            }
+        });
+
+        // Recebe novos posts em tempo real
+        socket.on("receivedMessage", function (post) {
+            renderPost(post);
+        });
+
+        // Envio do formulário de post
+        $("#frm_post").submit(function (event) {
+            event.preventDefault();
+
+            let usuario = $("#txt_usuario").val();
+            let texto = $("#txt_post").val();
+
+            if (usuario.length && texto.length) {
+                // Cria data/hora formatada
+                let data_hora_obj = new Date();
+                let data_hora_msg = `[${data_hora_obj.getDate()}/${
+                    data_hora_obj.getMonth() + 1
+                }/${data_hora_obj.getFullYear()} - ${data_hora_obj.getHours()}:${data_hora_obj.getMinutes()}:${data_hora_obj.getSeconds()}]`;
+
+                let postObject = {
+                    usuario: usuario,
+                    data_hora: data_hora_msg,
+                    post: texto,
+                };
+
+                // Renderiza no front do remetente
+                renderPost(postObject);
+
+                // Envia para o servidor
+                socket.emit("sendMessage", postObject);
+
+                // Limpa campos e fecha modal
+                $("#txt_usuario").val("");
+                $("#txt_post").val("");
+                document.getElementById("myModal").style.display = "none";
+            }
+        });
+
+        /***** ABERTURA/FECHAMENTO DO FORMULÁRIO MODAL *****/
+        let btn = document.getElementById('btn_post');
+        let modal = document.getElementById("myModal");
+        let span = document.getElementsByClassName("close")[0];
+
+        // abre modal
+        btn.addEventListener('click', function (event) {
+            event.preventDefault();
+            modal.style.display = "block";
+        });
+
+        // fecha modal
+        span.addEventListener('click', function (event) {
+            modal.style.display = "none";
+        });
+    </script>
+</body>
+
+</html>
