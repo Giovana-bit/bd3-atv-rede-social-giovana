@@ -1,4 +1,4 @@
-# 🌐 Rede Social - Web Chat
+# 🌐 Rede Social - Posts
 
 ## 📌 Descrição
 
