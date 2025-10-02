@@ -6,7 +6,6 @@ Este projeto foi desenvolvido como parte da **Atividade de Banco de Dados 3**, c
 
 Cada postagem é armazenada como um documento na coleção, contendo:
 
-* **Usuário** (autor do post)
 * **Data e hora**
 * **Conteúdo da postagem**
 
